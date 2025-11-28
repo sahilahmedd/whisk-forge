@@ -13,6 +13,8 @@ class JobManager:
         self.db_path = db_path
         self.queue = queue.Queue()
         self.running = False
+        self.pause_event = threading.Event()
+        self.pause_event.set() # Start unpaused
         self.worker_thread: Optional[threading.Thread] = None
         self.client: Optional[WhiskClient] = None
         self.output_dir = "output"
@@ -35,12 +37,12 @@ class JobManager:
             pass
             
         c.execute('''CREATE TABLE IF NOT EXISTS jobs
-                     (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                      prompt TEXT,
-                      status TEXT,
-                      result_path TEXT,
-                      aspect_ratio TEXT,
-                      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+                      (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                       prompt TEXT,
+                       status TEXT,
+                       result_path TEXT,
+                       aspect_ratio TEXT,
+                       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
         conn.commit()
         conn.close()
 
@@ -52,14 +54,14 @@ class JobManager:
         if not os.path.exists(path):
             os.makedirs(path)
 
-    def add_job(self, prompt: str, aspect_ratio: str = "IMAGE_ASPECT_RATIO_LANDSCAPE", count: int = 1):
+    def add_job(self, prompt: str, aspect_ratio: str = "IMAGE_ASPECT_RATIO_LANDSCAPE", count: int = 1, prompt_index: int = 0):
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
         
         # Add single entry with count
         c.execute("INSERT INTO jobs (prompt, status, aspect_ratio) VALUES (?, ?, ?)", (prompt, "PENDING", aspect_ratio))
         job_id = c.lastrowid
-        self.queue.put({"id": job_id, "prompt": prompt, "aspect_ratio": aspect_ratio, "count": count})
+        self.queue.put({"id": job_id, "prompt": prompt, "aspect_ratio": aspect_ratio, "count": count, "prompt_index": prompt_index})
             
         conn.commit()
         conn.close()
@@ -78,6 +80,7 @@ class JobManager:
             return
 
         self.running = True
+        self.pause_event.set() # Ensure we start unpaused
         self.worker_thread = threading.Thread(target=self._process_queue, daemon=True)
         self.worker_thread.start()
         if self.on_status_change:
@@ -85,11 +88,25 @@ class JobManager:
 
     def stop_processing(self):
         self.running = False
+        self.pause_event.set() # Unblock any waiting threads so they can exit
         if self.on_status_change:
             self.on_status_change("Processing stopping...")
 
+    def pause_processing(self):
+        self.pause_event.clear()
+        if self.on_status_change:
+            self.on_status_change("Processing paused.")
+
+    def resume_processing(self):
+        self.pause_event.set()
+        if self.on_status_change:
+            self.on_status_change("Processing resumed.")
+
     def _process_queue(self):
         while self.running:
+            self.pause_event.wait() # Wait if paused
+            if not self.running: break
+
             try:
                 job = self.queue.get(timeout=1)
             except queue.Empty:
@@ -99,6 +116,7 @@ class JobManager:
             prompt = job["prompt"]
             aspect_ratio = job.get("aspect_ratio", "IMAGE_ASPECT_RATIO_LANDSCAPE")
             count = job.get("count", 1)
+            prompt_index = job.get("prompt_index", 0)
 
             if self.on_status_change:
                 self.on_status_change(f"Processing: {prompt[:30]}...")
@@ -110,6 +128,7 @@ class JobManager:
                 all_images = []
 
                 for i in range(count):
+                    self.pause_event.wait() # Wait if paused between images
                     if not self.running: break
                     
                     status_msg = f"Creating {i+1}/{count}"
@@ -128,17 +147,12 @@ class JobManager:
                             for img in panel.get("generatedImages", []):
                                 encoded = img.get("encodedImage")
                                 if encoded:
-                                    # Generate filename
-                                    safe_prompt = sanitize_filename(prompt)[:50]
-                                    
-                                    # Sequential naming
-                                    existing_files = os.listdir(self.output_dir)
-                                    c_idx = 1
-                                    while True:
-                                        filename = f"image_{c_idx}_{safe_prompt}.jpg"
-                                        if filename not in existing_files:
-                                            break
-                                        c_idx += 1
+                                    # Strict Sequential Naming
+                                    if count == 1:
+                                        filename = f"image_{prompt_index}.jpg"
+                                    else:
+                                        # 1-based variation index
+                                        filename = f"image_{prompt_index}_{i+1}.jpg"
                                     
                                     file_path = os.path.join(self.output_dir, filename)
                                     

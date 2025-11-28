@@ -10,8 +10,10 @@
 - **🔐 Secure Session Management**: seamless authentication using your Whisk AI session cookies.
 - **🎛️ Granular Control**: Customize aspect ratios (Landscape, Portrait, Square), select image models, and more.
 - **💾 Smart Job Persistence**: Never lose your progress. WhiskForge tracks every job and history in a local database.
-- **🖼️ Integrated Gallery**: Preview, organize, and manage your downloaded masterpieces directly within the app.
-- **⏯️ Pause & Resume**: Full control over your generation queue.
+- **🖼️ Integrated Gallery**: Preview generated images directly in the app with thumbnail support.
+- **⏯️ Pause & Resume**: Full control over your generation queue. Pause at any time and resume exactly where you left off.
+- **📝 Sequential Naming**: Images are named sequentially (e.g., `image_1.jpg`, `image_2.jpg`) based on your prompt list order.
+- **📊 Logging**: Dedicated logs tab for real-time debugging and status tracking.
 
 ## 🛠️ Installation
 
@@ -39,8 +41,9 @@
 
 1.  **Launch WhiskForge**.
 2.  **Authenticate**: Paste your Whisk AI session cookies (JSON format from a cookie exporter extension).
-3.  **Configure**: Enter your prompts, choose your aspect ratio, and set the number of images.
-4.  **Generate**: Click start and watch the magic happen. Images are saved to the `output` folder by default.
+3.  **Configure**: Enter your prompts (or upload a `.txt` file), choose your aspect ratio, and set the number of images.
+4.  **Generate**: Click start. You can **Pause** and **Resume** the process at any time.
+5.  **View Results**: Images are saved to the `output` folder and displayed as thumbnails in the queue.
 
 ## 🔮 Upcoming Features (Roadmap)
 

@@ -3,7 +3,7 @@ from PyInstaller.utils.hooks import collect_all
 
 datas = []
 binaries = []
-hiddenimports = ['src.ui.app_ui', 'src.core.job_manager', 'src.core.api_client', 'src.core.utils']
+hiddenimports = ['src.ui.app_ui', 'src.core.job_manager', 'src.core.api_client', 'src.core.utils', 'customtkinter', 'PIL', 'PIL._tkinter_finder', 'sqlite3']
 tmp_ret = collect_all('customtkinter')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
