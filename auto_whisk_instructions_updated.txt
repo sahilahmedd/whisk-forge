@@ -1,0 +1,165 @@
+Auto Whisk Generator – Full Instruction Document for AI Agent
+UPDATED with Whisk API request/response details and auth header instructions
+Tool name: WhiskForge
+
+PURPOSE
+You are an AI agent responsible for building a Windows desktop tool (code in Python, packaged as .exe) that automates image generation on Whisk AI (Google Labs). This document tells you exactly what to build and includes the HTTP request/response contract observed in the browser so you can implement the API calls.
+
+TOOL NAME
+Choose a friendly, memorable name for the tool: **WhiskForge**
+(Other alternates: AutoWhisk Pro, WhiskSmith — but WhiskForge combines creation + crafting imagery.)
+
+HIGH-LEVEL GOAL
+Build a standalone Windows application that:
+- Accepts Whisk session cookies (JSON) and extracts the access token
+- Lets the user configure aspect ratio, images per prompt, reference photos, prompt lists, output directory
+- Automates generateImage requests to Whisk API, polls for results, downloads images, saves metadata
+- Shows previews, logging, progress, and supports pause/resume, retries, job persistence
+- Is implemented in Python and packaged into a single `.exe` (PyInstaller)
+
+WHISK API DETAILS (From Browser DevTools)
+Use the following endpoint to request image generation:
+
+Request URL:
+POST https://aisandbox-pa.googleapis.com/v1/whisk:generateImage
+
+Important Request Headers (include these at minimum; mimic browser behavior):
+- Authorization: Bearer <ACCESS_TOKEN>
+  - The ACCESS_TOKEN is extracted from the cookie JSON exported by the Cookie Exporter extension.
+  - Example: Authorization: Bearer ya29.a0AiT6K2sYx-...
+- Content-Type: text/plain;charset=UTF-8
+- Accept: */*
+- Origin: https://labs.google
+- Referer: https://labs.google/
+- User-Agent: (copy a modern Chrome UA string)
+- Sec-Fetch-Site / Sec-Fetch-Mode / Sec-Fetch-Dest as browser sets (optional)
+- Any other headers the browser sends that are required by the endpoint (copy exactly if necessary).
+
+Request payload (JSON) — required fields and example:
+{
+    "clientContext": {
+        "workflowId": "b389c541-7b4e-49ae-a2f4-6631c83da68a",
+        "tool": "BACKBONE",
+        "sessionId": ";1764343556378"
+    },
+    "imageModelSettings": {
+        "imageModel": "IMAGEN_3_5",
+        "aspectRatio": "IMAGE_ASPECT_RATIO_LANDSCAPE"
+    },
+    "seed": 766105,
+    "prompt": "A child’s hands resting perfectly still on their lap, waiting. Oil painting ... No watermark.",
+    "mediaCategory": "MEDIA_CATEGORY_BOARD"
+}
+
+Notes on fields:
+- clientContext.workflowId: a UUID (you can generate a new UUID per request if needed)
+- tool: often "BACKBONE" in observed payloads
+- sessionId: optional; mirror what browser sends or use a random-ish value
+- imageModelSettings.imageModel: e.g., "IMAGEN_3_5" (map UI model selector to this string)
+- imageModelSettings.aspectRatio: one of the API's aspect ratio constants:
+  - IMAGE_ASPECT_RATIO_LANDSCAPE (16:9)
+  - IMAGE_ASPECT_RATIO_PORTRAIT (9:16)
+  - IMAGE_ASPECT_RATIO_SQUARE (1:1)
+- seed: integer; can be provided or omitted for random
+- prompt: the prompt text (apply user prompt + reference photo prompt if enabled)
+- mediaCategory: e.g., "MEDIA_CATEGORY_BOARD" (use observed value)
+
+Example minimal HTTP call in Python (using httpx):
+```py
+headers = {
+    "Authorization": f"Bearer {token}",
+    "Content-Type": "text/plain;charset=UTF-8",
+    "Origin": "https://labs.google",
+    "Referer": "https://labs.google/",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) ...",
+}
+payload = { ... }  # see above
+resp = httpx.post("https://aisandbox-pa.googleapis.com/v1/whisk:generateImage", json=payload, headers=headers, timeout=30)
+resp.raise_for_status()
+data = resp.json()
+```
+
+Observed Response Format (example):
+{
+    "imagePanels": [
+        {
+            "prompt": "...",
+            "generatedImages": [
+                {
+                    "encodedImage": "/9j/4AAQSkZJRgABAQAAAQABAAD/4RYSRXhpZgAASUkqAAgAAAADADEBAgAHAAAAMgAAABICAwACAAAAAgACAGmHBAABAAAAOgAAAJIAAABQaWNhc2EAAAQAAJAHAAQAAAAwMjIwAqAEAAEAAABVBQAAA6AEAAEAAAAAAwAAIKQC...",
+                    "seed": 766105,
+                    "mediaGenerationId": "CAMaJGIzODljNTQxLTdiNGUtNDlhZS1hMmY0LTY2MzFjODNkYTY4YSIDQ0NRKiQ2YjU3YmYxMy01YWY1LTQ5YzUtYWNjZS03ZDc0YTNiMTg4YTc",
+                    "prompt": "...",
+                    "imageModel": "IMAGEN_3_5",
+                    "workflowId": "b389c541-7b4e-49ae-a2f4-6631c83da68a",
+                    "mediaVisibility": "PRIVATE",
+                    "fingerprintLogRecordId": "00d0ee1ac80000000000000000000000",
+                    "aspectRatio": "IMAGE_ASPECT_RATIO_LANDSCAPE"
+                }
+            ]
+        }
+    ],
+    "workflowId": "b389c541-7b4e-49ae-a2f4-6631c83da68a"
+}
+
+Notes on response:
+- generatedImages[].encodedImage is Base64-encoded binary (looks like JPEG starting with "/9j/..." which decodes to JPEG bytes). Decode with base64 and save as .jpg (or inspect image headers to choose extension).
+- mediaGenerationId and seed are useful metadata to save alongside the image.
+- The response may include images inline in encodedImage — if present, no further polling is required.
+- In other cases, the API might return job IDs and require polling separate endpoints for completion; inspect responses and adjust flow accordingly.
+
+Image decoding example (Python):
+```py
+import base64
+b = base64.b64decode(encodedImage)
+with open("output/image_001.jpg", "wb") as f:
+    f.write(b)
+```
+
+AUTH TOKEN & COOKIE HANDLING
+- The user will paste the Cookie Exporter JSON into the app.
+- Parse that JSON and extract the OAuth-like token (strings like "ya29." are Google access tokens).
+- Place that token into the `Authorization` request header as `Bearer <token>`.
+- Never log or upload tokens. Store them only locally and encrypt or obfuscate if persisted.
+
+POLLING STRATEGY
+- If the generateImage response returns encodedImage directly, save it immediately.
+- If it returns job IDs instead, implement polling: poll every 1–2 seconds up to a timeout (e.g., 60s–120s), with exponential backoff and max retries.
+- Respect rate-limit HTTP responses (429) and use `Retry-After` header to sleep.
+
+METADATA TO SAVE
+For each saved image, store a JSON record:
+{
+  "filename": "20251125_1234_prompt_001.jpg",
+  "prompt": "...",
+  "seed": 766105,
+  "mediaGenerationId": "...",
+  "imageModel": "IMAGEN_3_5",
+  "aspectRatio": "IMAGE_ASPECT_RATIO_LANDSCAPE",
+  "workflowId": "...",
+  "timestamp_utc": "2025-11-25T12:34:56Z"
+}
+
+FILE NAMING
+- Sanitize prompt text for filename (limit length).
+- Include index, short prompt hash, and UTC timestamp for uniqueness.
+
+ADDITIONAL IMPLEMENTATION NOTES
+- Use httpx with proper headers; consider reusing a single client for the session.
+- Use asyncio + httpx.AsyncClient for concurrency or a ThreadPool for blocking calls.
+- Create a job_store (SQLite recommended) that tracks prompt list, statuses, saved files, and allows exact resume.
+- Implement Pause by stopping new tasks and persisting current queue; allow graceful cancellation of in-flight downloads if desired.
+- Implement Retry Failed: queue failed prompts again with exponential backoff.
+- Generate thumbnails with Pillow and cache them for the UI.
+- Provide clear UI warnings: "Do not share your cookie/token" and "Using this tool may violate service TOS".
+
+PYINSTALLER PACKAGING
+Command example:
+pyinstaller --onefile --windowed --add-data "src/resources;resources" src/main.py
+
+FINAL NOTES / ETHICS / SAFETY
+- Only test with your own account. Do not harvest or distribute cookies.
+- Automating usage of services can violate their Terms of Service — review Whisk/Google Labs TOS before broad usage.
+- Adding too many parallel requests may lead to IP bans; use conservative defaults (workers=1 or 2) and expose worker config.
+
+END OF UPDATED INSTRUCTION DOCUMENT
