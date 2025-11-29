@@ -2,7 +2,21 @@ import json
 import base64
 import os
 import re
+import subprocess
+import platform
 from typing import Optional, Dict, Any, Tuple
+
+def open_file(path: str):
+    """Opens a file with the default application in a cross-platform way."""
+    try:
+        if platform.system() == 'Windows':
+            os.startfile(path)
+        elif platform.system() == 'Darwin':  # macOS
+            subprocess.call(('open', path))
+        else:  # Linux
+            subprocess.call(('xdg-open', path))
+    except Exception as e:
+        print(f"Error opening file {path}: {e}")
 
 def parse_cookie_json(json_str: str) -> Tuple[Optional[str], Dict[str, str]]:
     """

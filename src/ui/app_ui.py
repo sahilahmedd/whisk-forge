@@ -7,7 +7,8 @@ import sys
 import datetime
 from PIL import Image, ImageTk
 from ..core.job_manager import JobManager
-from ..core.utils import parse_cookie_json
+from ..core.job_manager import JobManager
+from ..core.utils import parse_cookie_json, open_file
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -29,6 +30,15 @@ class WhiskApp(ctk.CTk):
 
         self.title("WhiskForge - AI Image Generator")
         self.geometry("1200x800")
+        
+        # Set window icon
+        try:
+            icon_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "assets", "logo.png")
+            if os.path.exists(icon_path):
+                img = tk.PhotoImage(file=icon_path)
+                self.iconphoto(False, img)
+        except Exception as e:
+            print(f"Failed to set icon: {e}")
 
         self.job_manager = JobManager()
         self.job_rows = {} # Map job_id -> dict of UI widgets
@@ -164,6 +174,8 @@ class WhiskApp(ctk.CTk):
         
         self.stop_btn = ctk.CTkButton(bottom_frame, text="STOP", fg_color="red", command=self.stop_processing, state="disabled")
         self.stop_btn.pack(side="right", fill="x", expand=True, padx=(5, 0))
+
+
 
     def _setup_main_area(self):
         self.main_tabview = ctk.CTkTabview(self.main_frame)
@@ -389,13 +401,13 @@ class WhiskApp(ctk.CTk):
                         
                         btn = ctk.CTkButton(frame_images, text="", image=ctk_img, width=100, height=100,
                                             fg_color="transparent", hover_color="gray",
-                                            command=lambda p=img_path: os.startfile(p))
+                                            command=lambda p=img_path: open_file(p))
                         btn.pack(side="left", padx=5, pady=2)
                     except Exception as e:
                         print(f"Error loading thumbnail: {e}")
                         # Fallback to text button
                         btn = ctk.CTkButton(frame_images, text="Open", width=50, height=20, 
-                                            command=lambda p=img_path: os.startfile(p))
+                                            command=lambda p=img_path: open_file(p))
                         btn.pack(side="left", padx=2)
 
     def _check_queue_completion(self):

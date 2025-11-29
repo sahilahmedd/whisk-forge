@@ -2,7 +2,7 @@
 
 **WhiskForge** is a powerful Windows desktop automation tool designed to streamline image generation using **Whisk AI (Google Labs)**. It empowers creators to queue prompts, manage sessions efficiently, and build their image libraries with ease.
 
-![WhiskForge Banner](https://via.placeholder.com/1200x300?text=WhiskForge+Automation+Tool) *<!-- Replace with actual screenshot later -->*
+![WhiskForge Banner](assets/banner.png)
 
 ## 🚀 Features
 
@@ -36,6 +36,9 @@
     ```bash
     python run.py
     ```
+
+### Option 3: Build for macOS
+1.  Follow the instructions in [MAC_BUILD.md](MAC_BUILD.md) to build the application on a Mac.
 
 ## 📖 Usage
 

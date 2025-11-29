@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
 
-datas = []
+datas = [('assets', 'assets')]
 binaries = []
 hiddenimports = ['src.ui.app_ui', 'src.core.job_manager', 'src.core.api_client', 'src.core.utils', 'customtkinter', 'PIL', 'PIL._tkinter_finder', 'sqlite3']
 tmp_ret = collect_all('customtkinter')
