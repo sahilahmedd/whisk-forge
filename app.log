@@ -1,0 +1,70 @@
+2025-12-01 22:59:22,380 - WhiskForge - DEBUG - WhiskAPI initialized
+2025-12-01 22:59:22,691 - httpcore.connection - DEBUG - connect_tcp.started host='labs.google' port=443 local_address=None timeout=30.0 socket_options=None
+2025-12-01 22:59:23,325 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x00000198DA541550>
+2025-12-01 22:59:23,326 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x00000198DA43DA50> server_hostname='labs.google' timeout=30.0
+2025-12-01 22:59:23,665 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x00000198DA53E710>
+2025-12-01 22:59:23,665 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-12-01 22:59:23,666 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-12-01 22:59:23,666 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-12-01 22:59:23,666 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-12-01 22:59:23,667 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-12-01 22:59:24,231 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'set-cookie', b'__Secure-next-auth.session-token=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..ITCEsY2Wng4WGUR2.3sWtSzwJ1JH1YtGJOWkahJVQhQS7JQSlpf2ZDuEoiFcZ7goES3aUuQ4aoBy8N4iVDuNLJ03veD8blEMG_wjGIZ1qXFc4GInE4dStkAOrhfpcwcmKmD7TG0MIHoG2NlHjmC7kwf0LuW-M_CNEtTZ37xWnA4KCPSKL8e26SkOPtIOe0u_R6WkZo1lzHxwx4JIHfFToqQ8B1w8YqbRY437AXiFNDXzoEOTdPbJe4aVJ1IDprNCf18IMu_1JlKWrw0ovORxrQFEQe5kAN9QIWrIIRn_5lTQyuuJinpC0Ri_LM5WYlQM-rWPtTf2Tp_9Pios8pzgiUHnZ471EsuGpECm2MiBPmXw5wJ8GxJf7zomXr82zEGNdFUjhrQkdK0XTKx2iYOFEBaoFWiGD-PkTh_jGmtVUlMvFH3SbdS3GXnkE6Ev3xyp3Bj3MpzKSyGTrTYvjrItETowEOXWo-qMVhQESBpmlIMGMedAUjdEM9dn_4faVZJJvpE_l6-nOE-Ho0k98bfEckDATPLO1i5MBgzG6R7XydLlQ4pgGGsWh7Xk6Bg7V-ezbU9nKugHeJtB_020oEMesYMYkh7wX3AlfFmdWMP5oyEsXpAMjLwxcavmDVSgh2I_IdEtyzvgzoPdwgQ8PJBqXjY4M163CdFKX8kQqTJADo51aNO3nUWhXKvK_TKdr1coWVLrpdRl-okxQVIKLt5Lqwi7_aPK6uVB_solevzUYg_hvp-q7nkzrOxrIMoYLCEHWzjuB3R1QF1Qsj5GZE3myj9Wnt8YSDtFU3kNukyzZlKr3m714sT1mtvMqoyH3Jp4kuziDh3tU1JIwjUiqgbbABRuAeuwsoL27cXVQW4P9so_P8hh8cwTCPXG8nEkmjUatKYzUl_YpE1dkigGnXjM_ick9armybC6ntrgkX6n1fO84KRiuD8K0WOCw8C7w_C1MM4GZOOeBfGG19lQojGMcblyu76kqW_ePjM-TD2Qm1zA.CKeARXKCLQ5kZVU_CQNMIQ; Path=/; Expires=Wed, 31 Dec 2025 17:29:24 GMT; HttpOnly; Secure; SameSite=Lax'), (b'content-type', b'application/json; charset=utf-8'), (b'cache-control', b'private, no-cache, no-store'), (b'pragma', b'no-cache'), (b'expires', b'0'), (b'etag', b'"102165qifpmhq"'), (b'vary', b'Accept-Encoding'), (b'x-cloud-trace-context', b'c202a1c0336b3a638b2912621779007e'), (b'date', b'Mon, 01 Dec 2025 17:29:24 GMT'), (b'server', b'Google Frontend'), (b'Content-Length', b'638'), (b'Alt-Svc', b'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000')])
+2025-12-01 22:59:24,232 - httpx - INFO - HTTP Request: GET https://labs.google/fx/api/auth/session "HTTP/1.1 200 OK"
+2025-12-01 22:59:24,232 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-12-01 22:59:24,233 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-12-01 22:59:24,233 - httpcore.http11 - DEBUG - response_closed.started
+2025-12-01 22:59:24,233 - httpcore.http11 - DEBUG - response_closed.complete
+2025-12-01 22:59:24,246 - httpcore.connection - DEBUG - close.started
+2025-12-01 22:59:24,248 - httpcore.connection - DEBUG - close.complete
+2025-12-01 22:59:24,249 - WhiskForge - DEBUG - Sending generation request for prompt: A cute robot fixing a computer, 3d render, high quality
+2025-12-01 22:59:24,250 - httpcore.connection - DEBUG - connect_tcp.started host='aisandbox-pa.googleapis.com' port=443 local_address=None timeout=60.0 socket_options=None
+2025-12-01 22:59:24,865 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x00000198DA53E990>
+2025-12-01 22:59:24,866 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x00000198DA28FD10> server_hostname='aisandbox-pa.googleapis.com' timeout=60.0
+2025-12-01 22:59:25,222 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x00000198DA509A70>
+2025-12-01 22:59:25,222 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-12-01 22:59:25,222 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-12-01 22:59:25,223 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-12-01 22:59:25,223 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-12-01 22:59:25,223 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-12-01 22:59:35,390 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=UTF-8'), (b'Vary', b'Origin'), (b'Vary', b'X-Origin'), (b'Vary', b'Referer'), (b'Content-Encoding', b'gzip'), (b'Date', b'Mon, 01 Dec 2025 17:29:36 GMT'), (b'Server', b'ESF'), (b'X-XSS-Protection', b'0'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-Content-Type-Options', b'nosniff'), (b'Access-Control-Allow-Origin', b'https://labs.google'), (b'Access-Control-Allow-Credentials', b'true'), (b'Access-Control-Expose-Headers', b'vary,vary,vary,content-encoding,date,server,content-length'), (b'Alt-Svc', b'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000'), (b'Transfer-Encoding', b'chunked')])
+2025-12-01 22:59:35,391 - httpx - INFO - HTTP Request: POST https://aisandbox-pa.googleapis.com/v1/whisk:generateImage "HTTP/1.1 200 OK"
+2025-12-01 22:59:35,404 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-12-01 22:59:36,478 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-12-01 22:59:36,478 - httpcore.http11 - DEBUG - response_closed.started
+2025-12-01 22:59:36,479 - httpcore.http11 - DEBUG - response_closed.complete
+2025-12-01 22:59:36,479 - WhiskForge - DEBUG - Generation response received
+2025-12-01 23:00:10,984 - WhiskForge - DEBUG - WhiskAPI initialized
+2025-12-01 23:00:11,275 - httpcore.connection - DEBUG - connect_tcp.started host='labs.google' port=443 local_address=None timeout=30.0 socket_options=None
+2025-12-01 23:00:11,600 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x00000197689A4440>
+2025-12-01 23:00:11,601 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x00000197688E1090> server_hostname='labs.google' timeout=30.0
+2025-12-01 23:00:11,907 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x0000019768927250>
+2025-12-01 23:00:11,907 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-12-01 23:00:11,907 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-12-01 23:00:11,907 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-12-01 23:00:11,907 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-12-01 23:00:11,907 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-12-01 23:00:12,275 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'set-cookie', b'__Secure-next-auth.session-token=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..Lmx8SVQKd5oj2tH0.YBCk1HN12jYatLqvzqwoMgoqx__eqr2NxaUUIzPe-gqr9eQMjXht1oPRx3JeZ-HXJbHzhfHMwj2b2qAyLb4FA0rTWq5lViGCnTyAy8t9vwnoQp2OfT-QIjjjBkC3SRrQuqdxh8hqT8m3XZrXhXlQw91ixvvlbm_TjB-kCZHiMDKzcVlEEwUPs3Yp_SqMfuowyJB85-cfPMJUuItk1zYOCPx-Z29oEq-lDXdrgQTRnC4fgRI6wDxskEnJ0yTH51IHv4kJC5Bj1ppkr8vhFgk6e2pEbQE6vs16aG4GSw-5TpM6uYCCTU-iuTQfb5uAXnv0obkz1h2-JRh4E7Flh-DA_nkmVuBPfdqm-d9GtQM_9I1WvuLkATnmGQlBWIdLx7jtvczfDH7Xe3Ja8Ujz9hPVKKDGpbAGUZDtOCJ9lFGcr-k5zGOQNqK4fC2HgDSNfagWQJK3QmocSI6qBJra7bVywPZyuS22SUNHZFLoKGvxdQ2WKxNwFfUZU4-n6t-LB3ToPn2rhe7RNEflZjiVpw1KTaQoqVDPDINgB7luzrG0LjGX5ql5vUjC__Cs-J-VvoVhfLqcbd9r7g-ub02bP_83IP5eRvLghm-_FfdXMjp5aOjPuPZfz_dEBpEcvh9rmtlfn17l4RtqW_3gc8tNJk8btfo0224Jh2gXWEV5DEPuZRrswrbUprD-ElplifbrA8WIZyxgmrh5SdXWzrsqBRuwrbwl54tnRL74f8XaWJBj03_aSZnVz6F3dFP0Iudy45BPyo-ff4bhxiAnSeGnyCrsONdFOgfhgzRr8PutB2S3ZrKik5p3NgGIrTGyjf7updMFXEev-2bsEcPY6O6nLNTA9RV3tQUQMAORHycVSWs2ipPnc6N5MFCb-27g6ORi7TaddFblBJ4BKobXI9Cfb7BDEaABvW_UIokEl70cJHhAhKssSh_fRjaSuwnMtm7FRBi8QUhm0Mcx1edA-hTcWbbFF7_Udi8.GBk0t9jLvCl46ltKCr01XQ; Path=/; Expires=Wed, 31 Dec 2025 17:30:12 GMT; HttpOnly; Secure; SameSite=Lax'), (b'content-type', b'application/json; charset=utf-8'), (b'cache-control', b'private, no-cache, no-store'), (b'pragma', b'no-cache'), (b'expires', b'0'), (b'etag', b'"102165qifpmhq"'), (b'vary', b'Accept-Encoding'), (b'x-cloud-trace-context', b'2d80c3db8eda6ad1760fdd01ddef22c0'), (b'date', b'Mon, 01 Dec 2025 17:30:12 GMT'), (b'server', b'Google Frontend'), (b'Content-Length', b'638'), (b'Alt-Svc', b'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000')])
+2025-12-01 23:00:12,276 - httpx - INFO - HTTP Request: GET https://labs.google/fx/api/auth/session "HTTP/1.1 200 OK"
+2025-12-01 23:00:12,276 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-12-01 23:00:12,565 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-12-01 23:00:12,566 - httpcore.http11 - DEBUG - response_closed.started
+2025-12-01 23:00:12,566 - httpcore.http11 - DEBUG - response_closed.complete
+2025-12-01 23:00:12,566 - httpcore.connection - DEBUG - close.started
+2025-12-01 23:00:12,566 - httpcore.connection - DEBUG - close.complete
+2025-12-01 23:00:20,754 - WhiskForge - DEBUG - Sending generation request for prompt: A child’s hands resting perfectly still on their lap, waiting. Oil painting with thick impasto brush strokes, visible textured canvas, impressionist-modern fine art, soft muted pastel tones, soft diffused lighting, calm emotional tone, loose edges, gentle mood. No photorealism, no anime, no cartoon, no text, no watermark.
+2025-12-01 23:00:20,756 - httpcore.connection - DEBUG - connect_tcp.started host='aisandbox-pa.googleapis.com' port=443 local_address=None timeout=60.0 socket_options=None
+2025-12-01 23:00:21,049 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x0000019768B179D0>
+2025-12-01 23:00:21,049 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x00000197688C5490> server_hostname='aisandbox-pa.googleapis.com' timeout=60.0
+2025-12-01 23:00:21,356 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x00000197689BA2C0>
+2025-12-01 23:00:21,356 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-12-01 23:00:21,357 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-12-01 23:00:21,357 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-12-01 23:00:21,357 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-12-01 23:00:21,357 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-12-01 23:00:32,890 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=UTF-8'), (b'Vary', b'Origin'), (b'Vary', b'X-Origin'), (b'Vary', b'Referer'), (b'Content-Encoding', b'gzip'), (b'Date', b'Mon, 01 Dec 2025 17:30:33 GMT'), (b'Server', b'ESF'), (b'X-XSS-Protection', b'0'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-Content-Type-Options', b'nosniff'), (b'Access-Control-Allow-Origin', b'https://labs.google'), (b'Access-Control-Allow-Credentials', b'true'), (b'Access-Control-Expose-Headers', b'vary,vary,vary,content-encoding,date,server,content-length'), (b'Alt-Svc', b'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000'), (b'Transfer-Encoding', b'chunked')])
+2025-12-01 23:00:32,891 - httpx - INFO - HTTP Request: POST https://aisandbox-pa.googleapis.com/v1/whisk:generateImage "HTTP/1.1 200 OK"
+2025-12-01 23:00:32,891 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-12-01 23:00:34,341 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-12-01 23:00:34,341 - httpcore.http11 - DEBUG - response_closed.started
+2025-12-01 23:00:34,341 - httpcore.http11 - DEBUG - response_closed.complete
+2025-12-01 23:00:34,342 - WhiskForge - DEBUG - Generation response received

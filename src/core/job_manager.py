@@ -15,7 +15,7 @@ class JobManager:
         self.running = False
         self.pause_event = threading.Event()
         self.pause_event.set() # Start unpaused
-        self.worker_thread: Optional[threading.Thread] = None
+        self.worker_threads: list[threading.Thread] = []
         self.client: Optional[WhiskClient] = None
         self.output_dir = "output"
         
@@ -35,6 +35,14 @@ class JobManager:
             c.execute("ALTER TABLE jobs ADD COLUMN aspect_ratio TEXT")
         except sqlite3.OperationalError:
             pass
+        try:
+            c.execute("ALTER TABLE jobs ADD COLUMN count INTEGER DEFAULT 1")
+        except sqlite3.OperationalError:
+            pass
+        try:
+            c.execute("ALTER TABLE jobs ADD COLUMN prompt_index INTEGER DEFAULT 0")
+        except sqlite3.OperationalError:
+            pass
             
         c.execute('''CREATE TABLE IF NOT EXISTS jobs
                       (id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,6 +50,8 @@ class JobManager:
                        status TEXT,
                        result_path TEXT,
                        aspect_ratio TEXT,
+                       count INTEGER DEFAULT 1,
+                       prompt_index INTEGER DEFAULT 0,
                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
         conn.commit()
         conn.close()
@@ -59,7 +69,7 @@ class JobManager:
         c = conn.cursor()
         
         # Add single entry with count
-        c.execute("INSERT INTO jobs (prompt, status, aspect_ratio) VALUES (?, ?, ?)", (prompt, "PENDING", aspect_ratio))
+        c.execute("INSERT INTO jobs (prompt, status, aspect_ratio, count, prompt_index) VALUES (?, ?, ?, ?, ?)", (prompt, "PENDING", aspect_ratio, count, prompt_index))
         job_id = c.lastrowid
         self.queue.put({"id": job_id, "prompt": prompt, "aspect_ratio": aspect_ratio, "count": count, "prompt_index": prompt_index})
             
@@ -70,7 +80,30 @@ class JobManager:
             self.on_status_change(f"Added job for: {prompt[:30]}... (Count: {count})")
         return job_id
 
-    def start_processing(self):
+    def retry_job(self, job_id):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        
+        # Get job details
+        c.execute("SELECT prompt, aspect_ratio, count, prompt_index FROM jobs WHERE id=?", (job_id,))
+        row = c.fetchone()
+        if row:
+            prompt, aspect_ratio, count, prompt_index = row
+            if not count: count = 1
+            if prompt_index is None: prompt_index = 0
+            
+            # Reset status
+            c.execute("UPDATE jobs SET status='PENDING', result_path=NULL WHERE id=?", (job_id,))
+            conn.commit()
+            
+            self.queue.put({"id": job_id, "prompt": prompt, "aspect_ratio": aspect_ratio, "count": count, "prompt_index": prompt_index})
+            
+            if self.on_status_change:
+                self.on_status_change(f"Retrying job {job_id}...")
+        
+        conn.close()
+
+    def start_processing(self, max_workers: int = 1):
         if self.running:
             return
         
@@ -81,17 +114,22 @@ class JobManager:
 
         self.running = True
         self.pause_event.set() # Ensure we start unpaused
-        self.worker_thread = threading.Thread(target=self._process_queue, daemon=True)
-        self.worker_thread.start()
+        self.worker_threads = []
+        
+        for _ in range(max_workers):
+            t = threading.Thread(target=self._process_queue, daemon=True)
+            t.start()
+            self.worker_threads.append(t)
+            
         if self.on_status_change:
-            self.on_status_change("Processing started.")
+            self.on_status_change(f"Processing started with {max_workers} workers.")
 
     def stop_processing(self):
         self.running = False
         self.pause_event.set() # Unblock any waiting threads so they can exit
         if self.on_status_change:
             self.on_status_change("Processing stopping...")
-
+            
     def pause_processing(self):
         self.pause_event.clear()
         if self.on_status_change:
@@ -194,3 +232,12 @@ class JobManager:
             c.execute("UPDATE jobs SET status = ? WHERE id = ?", (status, job_id))
         conn.commit()
         conn.close()
+
+    def clear_queue(self):
+        """Clears the internal queue and resets running state."""
+        with self.queue.mutex:
+            self.queue.queue.clear()
+        self.running = False
+        self.pause_event.set()
+        if self.on_status_change:
+            self.on_status_change("Queue cleared.")

@@ -11,13 +11,15 @@ class WhiskClient:
         self.token = token
         self.cookies = cookies or {}
         self.headers = {
-            "Authorization": f"Bearer {token}",
             "Content-Type": "text/plain;charset=UTF-8",
             "Origin": "https://labs.google",
             "Referer": "https://labs.google/",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
             "Accept": "*/*"
         }
+        
+        if token and token != "placeholder":
+            self.headers["Authorization"] = f"Bearer {token}"
         # Initialize client with cookies if provided
         self.client = httpx.Client(headers=self.headers, cookies=self.cookies, timeout=60.0)
 
@@ -78,12 +80,12 @@ class WhiskClient:
             
         try:
             print(f"Generating image with model: {image_model}, aspect: {aspect_ratio}")
-            print(f"Payload: {json.dumps(payload, indent=2)}")
+            # print(f"Payload: {json.dumps(payload, indent=2)}")
             # Mask token for logging
-            masked_headers = self.client.headers.copy()
-            if "Authorization" in masked_headers:
-                masked_headers["Authorization"] = masked_headers["Authorization"][:15] + "..."
-            print(f"Headers: {masked_headers}")
+            # masked_headers = self.client.headers.copy()
+            # if "Authorization" in masked_headers:
+            #     masked_headers["Authorization"] = masked_headers["Authorization"][:15] + "..."
+            # print(f"Headers: {masked_headers}")
             
             response = self.client.post(self.BASE_URL, json=payload)
             print(f"Response Status: {response.status_code}")

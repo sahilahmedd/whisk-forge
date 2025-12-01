@@ -1,0 +1,102 @@
+/* Dark Theme */
+QWidget { 
+    background: #111827; 
+    color: #F9FAFB; 
+    font-family: "Inter", "Segoe UI", "Arial", sans-serif;
+    font-size: 13px;
+}
+
+QHeaderView::section { 
+    background: #1F2937; 
+    padding: 8px; 
+    font-weight: 600; 
+    border: none;
+    border-bottom: 1px solid #374151;
+    border-right: 1px solid #374151;
+    color: #D1D5DB;
+}
+
+QTableView { 
+    background: #1F2937; 
+    gridline-color: #374151; 
+    selection-background-color: rgba(43,140,230,0.2); 
+    selection-color: #F9FAFB;
+    border: 1px solid #374151;
+    border-radius: 6px;
+    outline: none;
+}
+
+QScrollBar:vertical {
+    border: none;
+    background: #1F2937;
+    width: 10px;
+    margin: 0px 0px 0px 0px;
+}
+QScrollBar::handle:vertical {
+    background: #4B5563;
+    min-height: 20px;
+    border-radius: 5px;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    border: none;
+    background: none;
+}
+
+/* Specific Component Styling */
+#leftPanel {
+    background: #111827;
+}
+
+#rightPanel {
+    background: #111827;
+}
+
+/* Card Style */
+.Card {
+    background: #1F2937;
+    border: 1px solid #374151;
+    border-radius: 8px;
+}
+
+/* Buttons */
+QPushButton {
+    background-color: #374151;
+    border: 1px solid #4B5563;
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: #E5E7EB;
+    font-weight: 500;
+}
+QPushButton:hover {
+    background-color: #4B5563;
+    border-color: #6B7280;
+}
+QPushButton:pressed {
+    background-color: #1F2937;
+}
+
+QPushButton[primary="true"] {
+    background-color: #2B8CE6;
+    color: white;
+    border: 1px solid #2563EB;
+}
+QPushButton[primary="true"]:hover {
+    background-color: #1D4ED8;
+}
+
+QLineEdit {
+    background: #374151;
+    border: 1px solid #4B5563;
+    border-radius: 6px;
+    padding: 6px;
+    color: #F9FAFB;
+    selection-background-color: #2B8CE6;
+}
+QLineEdit:focus {
+    border: 1px solid #2B8CE6;
+}
+
+/* Splitter */
+QSplitter::handle {
+    background: #374151;
+}

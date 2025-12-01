@@ -44,6 +44,10 @@ class WhiskApp(ctk.CTk):
         self.job_rows = {} # Map job_id -> dict of UI widgets
         self.total_jobs = 0
         self.completed_jobs = 0
+        self.total_images_expected = 0
+        self.total_images_expected = 0
+        self.images_generated_count = 0
+        self.start_time = None
         
         self._setup_callbacks()
         
@@ -121,7 +125,10 @@ class WhiskApp(ctk.CTk):
         self.email_label = ctk.CTkLabel(self.profile_card, text="")
         self.email_label.pack(pady=2)
         self.expiry_label = ctk.CTkLabel(self.profile_card, text="", font=ctk.CTkFont(size=10), text_color="gray")
-        self.expiry_label.pack(pady=(0, 10))
+        self.expiry_label.pack(pady=(0, 5))
+        
+        self.edit_cookie_btn = ctk.CTkButton(self.profile_card, text="Edit", height=24, fg_color="gray", command=self.edit_cookies)
+        self.edit_cookie_btn.pack(pady=(0, 10), padx=20, fill="x")
         
         # Configuration Section
         config_frame = ctk.CTkFrame(self.sidebar_frame)
@@ -139,6 +146,19 @@ class WhiskApp(ctk.CTk):
         self.count_var = ctk.StringVar(value="1")
         self.count_menu = ctk.CTkOptionMenu(config_frame, variable=self.count_var, values=["1", "2", "3", "4"], width=70)
         self.count_menu.grid(row=1, column=1, padx=10, pady=(0, 10), sticky="ew")
+
+        # Parallel Threads
+        ctk.CTkLabel(config_frame, text="Parallel Threads:").grid(row=2, column=0, padx=10, pady=5, sticky="w")
+        self.parallel_var = ctk.IntVar(value=2)
+        self.parallel_slider = ctk.CTkSlider(config_frame, from_=1, to=2, number_of_steps=1, variable=self.parallel_var)
+        self.parallel_slider.grid(row=3, column=0, columnspan=2, padx=10, pady=(0, 10), sticky="ew")
+        self.parallel_label = ctk.CTkLabel(config_frame, text="2")
+        self.parallel_label.grid(row=2, column=1, padx=10, pady=5, sticky="e")
+        
+        # Update label on slider change
+        def update_parallel_label(value):
+            self.parallel_label.configure(text=str(int(value)))
+        self.parallel_slider.configure(command=update_parallel_label)
 
         # Prompts Label
         ctk.CTkLabel(self.sidebar_frame, text="Prompts List:", anchor="w").grid(row=7, column=0, padx=20, pady=(10, 0), sticky="ew")
@@ -175,6 +195,9 @@ class WhiskApp(ctk.CTk):
         self.stop_btn = ctk.CTkButton(bottom_frame, text="STOP", fg_color="red", command=self.stop_processing, state="disabled")
         self.stop_btn.pack(side="right", fill="x", expand=True, padx=(5, 0))
 
+        self.reset_btn = ctk.CTkButton(bottom_frame, text="RESET", fg_color="gray", command=self.reset_app)
+        self.reset_btn.pack(side="right", fill="x", expand=True, padx=(5, 0))
+
 
 
     def _setup_main_area(self):
@@ -185,24 +208,47 @@ class WhiskApp(ctk.CTk):
         self.tab_logs = self.main_tabview.add("Logs")
         
         # --- Queue Tab ---
+        # Progress Section
+        progress_frame = ctk.CTkFrame(self.tab_queue, fg_color="transparent")
+        progress_frame.pack(fill="x", padx=10, pady=(5, 5))
+        
+        self.progress_bar = ctk.CTkProgressBar(progress_frame)
+        self.progress_bar.pack(side="left", fill="x", expand=True, padx=(0, 10))
+        self.progress_bar.set(0)
+        
+        self.stats_label = ctk.CTkLabel(progress_frame, text="Images: 0/0 | Remaining: 0", font=ctk.CTkFont(size=12, weight="bold"))
+        self.stats_label.pack(side="right")
+
         # Header
         header_frame = ctk.CTkFrame(self.tab_queue, height=40, corner_radius=0)
         header_frame.pack(fill="x", pady=(0, 5))
         
-        header_frame.grid_columnconfigure(0, weight=3) # Prompt
-        header_frame.grid_columnconfigure(1, weight=1) # Status
-        header_frame.grid_columnconfigure(2, weight=2) # Images
+        # Retry All Button (Top Right of Header)
+        # We can put it in the header frame or above it. Let's put it in the header frame, maybe column 4?
+        # Or better, add a toolbar above header.
+        # Actually, let's put it in the header frame.
         
-        ctk.CTkLabel(header_frame, text="Prompt", anchor="w").grid(row=0, column=0, padx=10, sticky="ew")
-        ctk.CTkLabel(header_frame, text="Status").grid(row=0, column=1, padx=10)
-        ctk.CTkLabel(header_frame, text="Generated Images").grid(row=0, column=2, padx=10)
+        header_frame.grid_columnconfigure(0, weight=1) # Sr No
+        header_frame.grid_columnconfigure(1, weight=6) # Prompt
+        header_frame.grid_columnconfigure(2, weight=2) # Status
+        header_frame.grid_columnconfigure(3, weight=4) # Images
+        header_frame.grid_columnconfigure(4, weight=1) # Action
+        
+        ctk.CTkLabel(header_frame, text="Sr.", width=30).grid(row=0, column=0, padx=5)
+        ctk.CTkLabel(header_frame, text="Prompt", anchor="w").grid(row=0, column=1, padx=10, sticky="ew")
+        ctk.CTkLabel(header_frame, text="Status").grid(row=0, column=2, padx=10)
+        ctk.CTkLabel(header_frame, text="Generated Images").grid(row=0, column=3, padx=10)
+        
+        self.retry_all_btn = ctk.CTkButton(header_frame, text="Retry Failed", fg_color="red", width=80, height=24, command=self.retry_all_failed)
+        self.retry_all_btn.grid(row=0, column=4, padx=5)
 
         # Scrollable Job List
         self.job_list_frame = ctk.CTkScrollableFrame(self.tab_queue)
         self.job_list_frame.pack(fill="both", expand=True)
-        self.job_list_frame.grid_columnconfigure(0, weight=3)
-        self.job_list_frame.grid_columnconfigure(1, weight=1)
+        self.job_list_frame.grid_columnconfigure(0, weight=1)
+        self.job_list_frame.grid_columnconfigure(1, weight=6)
         self.job_list_frame.grid_columnconfigure(2, weight=2)
+        self.job_list_frame.grid_columnconfigure(3, weight=4)
 
         # --- Logs Tab ---
         self.logs_textbox = ctk.CTkTextbox(self.tab_logs, state="disabled", font=("Consolas", 12))
@@ -253,14 +299,24 @@ class WhiskApp(ctk.CTk):
             try:
                 import datetime
                 if isinstance(expires, (int, float)) or (isinstance(expires, str) and expires.isdigit()):
-                     dt = datetime.datetime.fromtimestamp(int(expires) / 1000)
-                     expires_str = dt.strftime("%Y-%m-%d %H:%M:%S")
+                     # Expires is usually in milliseconds
+                     exp_ts = int(expires) / 1000
+                     dt = datetime.datetime.fromtimestamp(exp_ts)
+                     now = datetime.datetime.now()
+                     
+                     remaining = dt - now
+                     minutes = int(remaining.total_seconds() / 60)
+                     
+                     if minutes > 0:
+                         expires_str = f"{minutes} minutes"
+                     else:
+                         expires_str = "Expired"
                 else:
                     expires_str = str(expires)
             except:
                 expires_str = str(expires)
                 
-            self.expiry_label.configure(text=f"Expires: {expires_str}")
+            self.expiry_label.configure(text=f"Expires in: {expires_str}")
             self.update_status(f"Session Valid! User: {email}")
         else:
             self.token_status.configure(text="SESSION INVALID", text_color="red")
@@ -313,6 +369,13 @@ class WhiskApp(ctk.CTk):
         
         self.total_jobs = len(prompts)
         self.completed_jobs = 0
+        self.total_images_expected = self.total_jobs * count
+        self.images_generated_count = 0
+        
+        self.progress_bar.set(0)
+        self.progress_bar.set(0)
+        self.stats_label.configure(text=f"Images: 0/{self.total_images_expected} | Remaining: {self.total_images_expected}")
+        self.start_time = datetime.datetime.now()
         
         # Add jobs
         for idx, prompt in enumerate(prompts, 1):
@@ -324,7 +387,7 @@ class WhiskApp(ctk.CTk):
             job_id = self.job_manager.add_job(prompt, aspect_ratio, count, prompt_index=idx)
             self._add_job_to_ui(job_id, prompt)
 
-        self.job_manager.start_processing()
+        self.job_manager.start_processing(max_workers=int(self.parallel_var.get()))
 
     def stop_processing(self):
         self.job_manager.stop_processing()
@@ -343,23 +406,29 @@ class WhiskApp(ctk.CTk):
     def _add_job_to_ui(self, job_id, prompt):
         row = len(self.job_rows)
         
+        # Sr No
+        lbl_sr = ctk.CTkLabel(self.job_list_frame, text=str(row + 1), width=30)
+        lbl_sr.grid(row=row, column=0, padx=5, pady=5)
+
         # Prompt Label with wrapping
         # Calculate approximate wrap length based on column weight/width
         # A safe bet is around 400-500px for the prompt column
         lbl_prompt = ctk.CTkLabel(self.job_list_frame, text=prompt, anchor="w", justify="left", wraplength=400)
-        lbl_prompt.grid(row=row, column=0, padx=10, pady=5, sticky="ew")
+        lbl_prompt.grid(row=row, column=1, padx=10, pady=15, sticky="ew") # Increased pady
         
         # Status Label
         lbl_status = ctk.CTkLabel(self.job_list_frame, text="PENDING", text_color="orange")
-        lbl_status.grid(row=row, column=1, padx=10, pady=5)
+        lbl_status.grid(row=row, column=2, padx=10, pady=15)
         
         # Images Container
         frame_images = ctk.CTkFrame(self.job_list_frame, fg_color="transparent")
-        frame_images.grid(row=row, column=2, padx=10, pady=5, sticky="ew")
+        frame_images.grid(row=row, column=3, padx=10, pady=15, sticky="ew")
         
         self.job_rows[job_id] = {
             "status_label": lbl_status,
-            "images_frame": frame_images
+            "images_frame": frame_images,
+            "loaded_images": set(), # Track loaded images to avoid flickering
+            "retry_btn": None # Placeholder for retry button
         }
 
     def handle_job_complete(self, data):
@@ -375,40 +444,100 @@ class WhiskApp(ctk.CTk):
             ui_elements = self.job_rows[job_id]
             lbl_status = ui_elements["status_label"]
             frame_images = ui_elements["images_frame"]
+            loaded_images = ui_elements["loaded_images"]
             
             lbl_status.configure(text=status)
             if status == "COMPLETED":
                 lbl_status.configure(text_color="green")
                 self._check_queue_completion()
+                if ui_elements["retry_btn"]:
+                    ui_elements["retry_btn"].destroy()
+                    ui_elements["retry_btn"] = None
             elif status == "FAILED":
                 lbl_status.configure(text_color="red")
                 self._check_queue_completion()
+                # Add Retry Button if not exists
+                if not ui_elements["retry_btn"]:
+                    btn_retry = ctk.CTkButton(frame_images, text="Retry", fg_color="red", width=60, height=24,
+                                              command=lambda j=job_id: self.retry_job(j))
+                    btn_retry.pack(side="left", padx=5)
+                    ui_elements["retry_btn"] = btn_retry
             else:
                 lbl_status.configure(text_color="blue")
+                if ui_elements["retry_btn"]:
+                    ui_elements["retry_btn"].destroy()
+                    ui_elements["retry_btn"] = None
                 
-            # Update images (clear and redraw)
-            for widget in frame_images.winfo_children():
-                widget.destroy()
-                
+            # Update images (Append new ones only)
             for img_path in images:
-                if os.path.exists(img_path):
-                    try:
-                        # Create thumbnail
-                        pil_img = Image.open(img_path)
-                        # CTkImage requires size argument for display size, and we can pass the PIL image
-                        # We'll make it a square thumbnail
-                        ctk_img = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=(100, 100))
+                if img_path not in loaded_images:
+                    if os.path.exists(img_path):
+                        try:
+                            # Create thumbnail
+                            pil_img = Image.open(img_path)
+                            ctk_img = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=(100, 100))
+                            
+                            btn = ctk.CTkButton(frame_images, text="", image=ctk_img, width=100, height=100,
+                                                fg_color="transparent", hover_color="gray",
+                                                command=lambda p=img_path: open_file(p))
+                            btn.pack(side="left", padx=5, pady=2)
+                            loaded_images.add(img_path)
+                        except Exception as e:
+                            print(f"Error loading thumbnail: {e}")
+                            # Fallback to text button
+                            btn = ctk.CTkButton(frame_images, text="Open", width=50, height=20, 
+                                                command=lambda p=img_path: open_file(p))
+                            btn.pack(side="left", padx=2)
+                            loaded_images.add(img_path)
                         
-                        btn = ctk.CTkButton(frame_images, text="", image=ctk_img, width=100, height=100,
-                                            fg_color="transparent", hover_color="gray",
-                                            command=lambda p=img_path: open_file(p))
-                        btn.pack(side="left", padx=5, pady=2)
-                    except Exception as e:
-                        print(f"Error loading thumbnail: {e}")
-                        # Fallback to text button
-                        btn = ctk.CTkButton(frame_images, text="Open", width=50, height=20, 
-                                            command=lambda p=img_path: open_file(p))
-                        btn.pack(side="left", padx=2)
+                        # Update Progress
+                        self.images_generated_count += 1
+                        if self.total_images_expected > 0:
+                            progress = self.images_generated_count / self.total_images_expected
+                            self.progress_bar.set(progress)
+                            remaining = self.total_images_expected - self.images_generated_count
+                            
+                            # Calculate ETA
+                            eta_str = ""
+                            if self.start_time and self.images_generated_count > 0:
+                                elapsed = (datetime.datetime.now() - self.start_time).total_seconds()
+                                avg_time = elapsed / self.images_generated_count
+                                remaining_seconds = int(avg_time * remaining)
+                                if remaining_seconds < 60:
+                                    eta_str = f" | ETA: {remaining_seconds}s"
+                                else:
+                                    eta_str = f" | ETA: {remaining_seconds // 60}m {remaining_seconds % 60}s"
+                            
+                            self.stats_label.configure(text=f"Images: {self.images_generated_count}/{self.total_images_expected} | Remaining: {remaining}{eta_str}")
+
+    def retry_job(self, job_id):
+        self.job_manager.retry_job(job_id)
+        # Update UI to pending
+        if job_id in self.job_rows:
+            ui_elements = self.job_rows[job_id]
+            ui_elements["status_label"].configure(text="PENDING", text_color="orange")
+            if ui_elements["retry_btn"]:
+                ui_elements["retry_btn"].destroy()
+                ui_elements["retry_btn"] = None
+
+    def retry_all_failed(self):
+        count = 0
+        for job_id, ui_elements in self.job_rows.items():
+            status_text = ui_elements["status_label"].cget("text")
+            if status_text == "FAILED":
+                self.retry_job(job_id)
+                count += 1
+        
+        if count > 0:
+            self.update_status(f"Retrying {count} failed jobs...")
+            # Ensure processing is running if it was stopped
+            if not self.job_manager.running:
+                 self.job_manager.start_processing(max_workers=int(self.parallel_var.get()))
+                 self.start_btn.configure(state="disabled")
+                 self.stop_btn.configure(state="normal")
+                 self.pause_btn.configure(state="normal", text="PAUSE", fg_color="orange")
+        else:
+            tk.messagebox.showinfo("WhiskForge", "No failed jobs to retry.")
 
     def _check_queue_completion(self):
         self.completed_jobs += 1
@@ -422,6 +551,52 @@ class WhiskApp(ctk.CTk):
     def on_closing(self):
         self.job_manager.stop_processing()
         self.destroy()
+
+    def reset_app(self):
+        # Stop any running jobs
+        self.job_manager.stop_processing()
+        self.job_manager.clear_queue()
+        
+        # Clear UI
+        self.prompts_textbox.delete("1.0", "end")
+        self.logs_textbox.configure(state="normal")
+        self.logs_textbox.delete("1.0", "end")
+        self.logs_textbox.configure(state="disabled")
+        
+        # Reset Progress
+        self.progress_bar.set(0)
+        self.stats_label.configure(text="Images: 0/0 | Remaining: 0")
+        self.total_jobs = 0
+        self.completed_jobs = 0
+        self.total_images_expected = 0
+        self.images_generated_count = 0
+        self.start_time = None
+        
+        # Clear Job List
+        for job_id, ui_elements in self.job_rows.items():
+            ui_elements["status_label"].destroy()
+            ui_elements["images_frame"].destroy()
+            # Also remove Sr No and Prompt labels if possible, but grid removal is tricky without references.
+            # Simpler approach: destroy the scrollable frame content and recreate.
+            # But we don't have direct references to row labels.
+            # Let's just clear the whole frame content.
+            for widget in self.job_list_frame.winfo_children():
+                widget.destroy()
+        
+        self.job_rows = {}
+        
+        # Reset Buttons
+        self.start_btn.configure(state="normal")
+        self.stop_btn.configure(state="disabled")
+        self.pause_btn.configure(state="disabled", text="PAUSE", fg_color="orange")
+        
+        self.update_status("App reset.")
+
+    def edit_cookies(self):
+        self.profile_card.grid_forget()
+        self.cookie_frame.grid(row=1, column=0, padx=0, pady=0, sticky="ew")
+        self.token_status.configure(text="Editing...", text_color="blue")
+        self.update_status("Edit cookies.")
 
 if __name__ == "__main__":
     app = WhiskApp()

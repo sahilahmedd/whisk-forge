@@ -1,0 +1,101 @@
+/* Light Theme */
+QWidget { 
+    background: #F7F8F9; 
+    color: #111827; 
+    font-family: "Inter", "Segoe UI", "Arial", sans-serif;
+    font-size: 13px;
+}
+
+QHeaderView::section { 
+    background: #F1F4F6; 
+    padding: 8px; 
+    font-weight: 600; 
+    border: none;
+    border-bottom: 1px solid #DFE6EA;
+    border-right: 1px solid #DFE6EA;
+    color: #4B5563;
+}
+
+QTableView { 
+    background: #FFFFFF; 
+    gridline-color: #EEF2F4; 
+    selection-background-color: rgba(43,140,230,0.06); 
+    selection-color: #111827;
+    border: 1px solid #DFE6EA;
+    border-radius: 6px;
+    outline: none;
+}
+
+QScrollBar:vertical {
+    border: none;
+    background: #F1F4F6;
+    width: 10px;
+    margin: 0px 0px 0px 0px;
+}
+QScrollBar::handle:vertical {
+    background: #CBD5E1;
+    min-height: 20px;
+    border-radius: 5px;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    border: none;
+    background: none;
+}
+
+/* Specific Component Styling */
+#leftPanel {
+    background: #F7F8F9;
+}
+
+#rightPanel {
+    background: #F7F8F9;
+}
+
+/* Card Style */
+.Card {
+    background: #FFFFFF;
+    border: 1px solid #DFE6EA;
+    border-radius: 8px;
+}
+
+/* Buttons */
+QPushButton {
+    background-color: #FFFFFF;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: #374151;
+    font-weight: 500;
+}
+QPushButton:hover {
+    background-color: #F9FAFB;
+    border-color: #9CA3AF;
+}
+QPushButton:pressed {
+    background-color: #F3F4F6;
+}
+
+QPushButton[primary="true"] {
+    background-color: #2B8CE6;
+    color: white;
+    border: 1px solid #2563EB;
+}
+QPushButton[primary="true"]:hover {
+    background-color: #1D4ED8;
+}
+
+QLineEdit {
+    background: #FFFFFF;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    padding: 6px;
+    selection-background-color: #2B8CE6;
+}
+QLineEdit:focus {
+    border: 1px solid #2B8CE6;
+}
+
+/* Splitter */
+QSplitter::handle {
+    background: #E5E7EB;
+}
